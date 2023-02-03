@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: strimzi
+  name: custommetric
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: strimzi
+  template:
+    metadata:
+      labels:
+        app: strimzi
+    spec:
+      containers:
+        - name: custommetriccontainer
+          image: docker.io/mezzeddine/custommetrics:v0
+          ports:
+            - containerPort: 8080
+              name: brom
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: demoobservabilitypodmonitor
+  labels:
+    app: strimzi
+spec:
+  selector:
+    matchLabels:
+      app: strimzi
+  namespaceSelector:
+    matchNames:
+      - default
+  podMetricsEndpoints:
+    - path: /prometheus
+      port: brom
+      interval: 5s

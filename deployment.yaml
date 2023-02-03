@@ -38,3 +38,34 @@ spec:
     - path: /prometheus
       port: brom
       interval: 5s
+
+---
+apiVersion: monitoring.coreos.com/v1
+kind: Prometheus
+metadata:
+  name: prometheus
+  labels:
+    app: strimzi
+spec:
+  replicas: 1
+  serviceAccountName: prometheus-server
+  podMonitorSelector:
+    matchLabels:
+      app: strimzi
+  serviceMonitorSelector: {}
+  resources:
+    requests:
+      memory: 400Mi
+  enableAdminAPI: false
+  ruleSelector:
+    matchLabels:
+      role: alert-rules
+      app: strimzi
+  alerting:
+    alertmanagers:
+      - namespace: default
+        name: alertmanager
+        port: alertmanager
+  additionalScrapeConfigs:
+    name: additional-scrape-configs
+    key: prometheus-additional.yaml
